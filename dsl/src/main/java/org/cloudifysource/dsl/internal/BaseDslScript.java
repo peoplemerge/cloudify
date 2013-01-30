@@ -53,7 +53,7 @@ import org.cloudifysource.dsl.cloud.AgentComponent;
 import org.cloudifysource.dsl.cloud.Cloud;
 import org.cloudifysource.dsl.cloud.CloudConfiguration;
 import org.cloudifysource.dsl.cloud.CloudProvider;
-import org.cloudifysource.dsl.cloud.CloudTemplate;
+import org.cloudifysource.dsl.cloud.ComputeTemplate;
 import org.cloudifysource.dsl.cloud.CloudUser;
 import org.cloudifysource.dsl.cloud.DeployerComponent;
 import org.cloudifysource.dsl.cloud.DiscoveryComponent;
@@ -220,7 +220,7 @@ public abstract class BaseDslScript extends Script {
 
 	public static void main(final String[] args) throws Exception {
 
-		final CloudTemplate template = new CloudTemplate();
+		final ComputeTemplate template = new ComputeTemplate();
 
 		final Class enumClass = PropertyUtils.getPropertyType(template, "fileTransfer");
 		System.out.println(enumClass.isEnum());
@@ -597,7 +597,7 @@ public abstract class BaseDslScript extends Script {
 			addObjectInitializerForClass(dslObjectInitializersByName, Cloud.class);
 			addObjectInitializerForClass(dslObjectInitializersByName, CloudProvider.class);
 			addObjectInitializerForClass(dslObjectInitializersByName, CloudUser.class);
-			addObjectInitializerForClass(dslObjectInitializersByName, CloudTemplate.class);
+			addObjectInitializerForClass(dslObjectInitializersByName, ComputeTemplate.class);
 			addObjectInitializerForClass(dslObjectInitializersByName, CloudConfiguration.class);
 			addObjectInitializerForClass(dslObjectInitializersByName, ComputeDetails.class);
 

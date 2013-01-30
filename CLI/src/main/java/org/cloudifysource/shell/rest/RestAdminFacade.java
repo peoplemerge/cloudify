@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.cloudifysource.dsl.cloud.CloudTemplate;
+import org.cloudifysource.dsl.cloud.ComputeTemplate;
 import org.cloudifysource.dsl.internal.CloudifyConstants;
 import org.cloudifysource.dsl.rest.ApplicationDescription;
 import org.cloudifysource.dsl.rest.ServiceDescription;
@@ -864,15 +864,15 @@ public class RestAdminFacade extends AbstractAdminFacade {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, CloudTemplate> listTemplates() 
+	public Map<String, ComputeTemplate> listTemplates() 
 			throws CLIStatusException {
 		final String url = SERVICE_CONTROLLER_URL + "templates";
-		Map<String, CloudTemplate> response = new HashMap<String, CloudTemplate>();
+		Map<String, ComputeTemplate> response = new HashMap<String, ComputeTemplate>();
 		try {
 			Map<String, Object> responseMap = (Map<String, Object>) client.get(url);
 			for (Entry<String, Object> entry : responseMap.entrySet()) {
 				ObjectMapper mapper = new ObjectMapper();
-				CloudTemplate convertValue = mapper.convertValue(entry.getValue(), CloudTemplate.class);
+				ComputeTemplate convertValue = mapper.convertValue(entry.getValue(), ComputeTemplate.class);
 				response.put(entry.getKey(), convertValue);
 			}
 		} catch (ErrorStatusException e) {
@@ -885,15 +885,15 @@ public class RestAdminFacade extends AbstractAdminFacade {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public CloudTemplate getTemplate(final String templateName) 
+	public ComputeTemplate getTemplate(final String templateName) 
 			throws CLIStatusException {
 		final String url = SERVICE_CONTROLLER_URL + "templates/" + templateName;
-		CloudTemplate response;
+		ComputeTemplate response;
 		try {
 			Object result = client.get(url);
 
 			ObjectMapper mapper = new ObjectMapper();
-			response = mapper.convertValue(result, CloudTemplate.class);
+			response = mapper.convertValue(result, ComputeTemplate.class);
 			
 		} catch (ErrorStatusException e) {
 			throw new CLIStatusException(e, e.getReasonCode(), e.getArgs());

@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.cloudifysource.dsl.cloud.Cloud;
-import org.cloudifysource.dsl.cloud.CloudTemplate;
+import org.cloudifysource.dsl.cloud.ComputeTemplate;
 import org.cloudifysource.esc.driver.provisioning.context.ProvisioningDriverClassContext;
 import org.cloudifysource.esc.driver.provisioning.context.ProvisioningDriverClassContextAware;
 import org.jclouds.util.CredentialUtils;
@@ -166,7 +166,7 @@ public abstract class BaseProvisioningDriver implements ProvisioningDriver, Prov
 	 *             Indicates missing credentials or IOException (when a key file
 	 *             is used)
 	 */
-	protected void handleServerCredentials(final MachineDetails machineDetails, final CloudTemplate template)
+	protected void handleServerCredentials(final MachineDetails machineDetails, final ComputeTemplate template)
 			throws CloudProvisioningException {
 
 		File keyFile = null;
@@ -242,7 +242,7 @@ public abstract class BaseProvisioningDriver implements ProvisioningDriver, Prov
 	 *            the cloud template.
 	 * @return the newly created machine details.
 	 */
-	protected MachineDetails createMachineDetailsForTemplate(final CloudTemplate template) {
+	protected MachineDetails createMachineDetailsForTemplate(final ComputeTemplate template) {
 
 		final MachineDetails md = new MachineDetails();
 		md.setAgentRunning(false);
@@ -266,7 +266,7 @@ public abstract class BaseProvisioningDriver implements ProvisioningDriver, Prov
 		@SuppressWarnings("unchecked")
 		final Future<MachineDetails>[] futures = (Future<MachineDetails>[]) new Future<?>[numberOfManagementMachines];
 
-		final CloudTemplate managementTemplate =
+		final ComputeTemplate managementTemplate =
 				this.cloud.getTemplates().get(this.cloud.getConfiguration().getManagementMachineTemplate());
 		try {
 			// Call startMachine asynchronously once for each management
@@ -326,7 +326,7 @@ public abstract class BaseProvisioningDriver implements ProvisioningDriver, Prov
 	}
 
 	protected abstract MachineDetails createServer(String serverName, long endTime,
-			CloudTemplate template) throws CloudProvisioningException, TimeoutException;
+			ComputeTemplate template) throws CloudProvisioningException, TimeoutException;
 
 	protected abstract void handleProvisioningFailure(int numberOfManagementMachines,
 			int numberOfErrors, Exception firstCreationException, MachineDetails[] createdManagementMachines) 
