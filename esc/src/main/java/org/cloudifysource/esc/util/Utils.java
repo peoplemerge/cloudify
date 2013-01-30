@@ -28,12 +28,12 @@ import java.util.logging.Logger;
 
 import org.cloudifysource.dsl.cloud.AgentComponent;
 import org.cloudifysource.dsl.cloud.Cloud;
-import org.cloudifysource.dsl.cloud.ComputeTemplate;
 import org.cloudifysource.dsl.cloud.DeployerComponent;
 import org.cloudifysource.dsl.cloud.DiscoveryComponent;
 import org.cloudifysource.dsl.cloud.GridComponent;
 import org.cloudifysource.dsl.cloud.GridComponents;
 import org.cloudifysource.dsl.cloud.UsmComponent;
+import org.cloudifysource.dsl.cloud.compute.ComputeTemplate;
 import org.cloudifysource.dsl.internal.CloudifyConstants;
 import org.cloudifysource.esc.driver.provisioning.MachineDetails;
 import org.cloudifysource.esc.installer.AgentlessInstaller;

@@ -22,7 +22,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import org.cloudifysource.dsl.cloud.ComputeTemplate;
+import org.cloudifysource.dsl.cloud.compute.ComputeTemplate;
 import org.cloudifysource.dsl.rest.ApplicationDescription;
 import org.cloudifysource.restclient.InvocationResult;
 import org.cloudifysource.shell.commands.CLIException;
