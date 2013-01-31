@@ -15,10 +15,13 @@ package org.cloudifysource.dsl;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
 import org.apache.commons.beanutils.BeanMap;
+import org.cloudifysource.dsl.cloud.Cloud;
 import org.cloudifysource.dsl.cloud.FileTransferModes;
+import org.cloudifysource.dsl.internal.DSLException;
 import org.cloudifysource.dsl.internal.ServiceReader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,6 +55,15 @@ public class CloudParserTest {
 			// this should throw this exception since 
 			// we moved the templates to a compute section
 		}
+	}
+	
+	@Test
+	public void testStorageTemplate() throws IOException, DSLException {
+		final Cloud cloud = ServiceReader.readCloud(new File(SIMPLE_CLOUD_PATH));
+		Assert.assertNotNull(cloud.getCloudStorage());
+		Assert.assertNotNull(cloud.getCloudStorage().getTemplates());
+		Assert.assertNotNull(cloud.getCloudStorage().getTemplates().get("SMALL_BLOCK"));
+		Assert.assertEquals(5, cloud.getCloudStorage().getTemplates().get("SMALL_BLOCK").getSize());
 	}
 
 
