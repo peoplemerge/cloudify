@@ -1297,9 +1297,8 @@ public class ServiceController implements ServiceDetailsProvider {
 			@PathVariable final int timeoutInMinutes) throws RestErrorException {
 		final String absolutePuName = ServiceUtils.getAbsolutePUName(
 				applicationName, serviceName);
-		final ProcessingUnit processingUnit = admin.getProcessingUnits()
-				.waitFor(absolutePuName, PU_DISCOVERY_TIMEOUT_SEC,
-						TimeUnit.SECONDS);
+		final ProcessingUnit processingUnit = admin.getProcessingUnits().waitFor(absolutePuName, 
+				PU_DISCOVERY_TIMEOUT_SEC, TimeUnit.SECONDS);
 		if (processingUnit == null) {
 			return unavailableServiceError(absolutePuName);
 		}
@@ -2325,7 +2324,12 @@ public class ServiceController implements ServiceDetailsProvider {
 				}
 			}
 		} else {
-			final ComputeTemplate template = getComputeTemplate(cloud, templateName);
+			deployment.addCommandLineArgument("-Xmx" + cloud.getConfiguration().getComponents().getUsm().getMaxMemory())
+			.addCommandLineArgument("-Xms" + cloud.getConfiguration().getComponents().getUsm().getMinMemory())
+			.addCommandLineArgument("-D" + CloudifyConstants.LRMI_BIND_PORT_CONTEXT_PROPERTY + "=" 
+									+ cloud.getConfiguration().getComponents().getUsm().getPortRange());
+			
+			final CloudTemplate template = getComputeTemplate(cloud, templateName);
 
 
 			long cloudExternalProcessMemoryInMB = 0;

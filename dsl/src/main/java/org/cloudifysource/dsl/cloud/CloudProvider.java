@@ -15,11 +15,17 @@
  *******************************************************************************/
 package org.cloudifysource.dsl.cloud;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.apache.commons.lang.StringUtils;
+import org.cloudifysource.dsl.DSLValidation;
 import org.cloudifysource.dsl.internal.CloudifyDSLEntity;
+import org.cloudifysource.dsl.internal.DSLValidationContext;
+import org.cloudifysource.dsl.internal.DSLValidationException;
 import org.openspaces.maven.support.OutputVersion;
 
 import com.j_spaces.kernel.PlatformVersion;
@@ -210,4 +216,55 @@ public class CloudProvider {
 			return String.format(cloudifyUrlPattern, productUri, editionUrlVariable);
 		}
 	}
+	
+	@DSLValidation
+	void validateProviderName(final DSLValidationContext validationContext)
+			throws DSLValidationException {
+
+		if (StringUtils.isBlank(provider)) {
+			throw new DSLValidationException("Provider cannot be empty");
+		}
+	}
+	
+	@DSLValidation
+	void validateCloudifyUrl(final DSLValidationContext validationContext)
+			throws DSLValidationException {
+		
+		/*String[] schema = {"http"};
+		UrlValidator urlValidator = new UrlValidator(schema);
+		if (!urlValidator.isValid(cloudifyUrl)) {
+			throw new DSLValidationException("Invalid cloudify url: \"" + cloudifyUrl + "\"");
+		}*/
+		
+		try {
+	        new URI(cloudifyUrl);
+		} catch (URISyntaxException e) {
+			throw new DSLValidationException("Invalid cloudify url: \"" + cloudifyUrl + "\"");
+		}
+		
+		//TODO request "head" to see if the url is accessible. If not - warning.		
+	}
+	
+	@DSLValidation
+	void validateNumberOfManagementMachines(final DSLValidationContext validationContext)
+			throws DSLValidationException {
+
+		if (numberOfManagementMachines != 1 && numberOfManagementMachines != 2) {
+			throw new DSLValidationException("Invalid numberOfManagementMachines: \"" + numberOfManagementMachines 
+					+ "\". Valid values are 1 or 2");
+		}
+		
+		//TODO request "head" to see if the url is accessible. If not - warning.
+	}
+	
+	@DSLValidation
+	void validateSshLoggingLevel(final DSLValidationContext validationContext)
+			throws DSLValidationException {
+
+		if (!sshLoggingLevel.matches("INFO|FINE|WARNING|DEBUG")) {
+			throw new DSLValidationException("sshLoggingLevel \"" + sshLoggingLevel + "\" is invalid, "
+					+ "supported values are: INFO, FINE, FINER, FINEST, WARNING, DEBUG");
+		}
+	}
+
 }
