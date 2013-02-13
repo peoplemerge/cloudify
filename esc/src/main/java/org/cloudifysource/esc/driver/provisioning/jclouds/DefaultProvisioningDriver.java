@@ -598,6 +598,11 @@ public class DefaultProvisioningDriver extends BaseProvisioningDriver implements
 	}
 
 	@Override
+	public Object getComputeContext() {
+		return this.deployer.getContext();
+	}
+
+	@Override
 	public MachineDetails[] getExistingManagementServers(final ControllerDetails[] controllers)
 			throws CloudProvisioningException, UnsupportedOperationException {
 		throw new UnsupportedOperationException(
