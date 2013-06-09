@@ -71,7 +71,7 @@ public class UploadControllerTest extends ControllerTest {
     private UploadRepo uploadRepo;
 
     private static final int TEST_UPLOAD_SIZE_LIMIT_BYTES = 10;
-    private static final int TEST_CLEANUP_TIMOUT_MILLIS = 100;
+    private static final int TEST_CLEANUP_TIMOUT_MILLIS = 1000;
 
 
     @Before
