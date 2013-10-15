@@ -732,6 +732,8 @@ public class ElasticMachineProvisioningCloudifyAdapter implements ElasticMachine
 		final GSAReservationId discoveredReservationId =
 				((InternalGridServiceAgent) gridServiceAgent).getReservationId();
 		logger.info("Discovered agent with reservation id " + discoveredReservationId);
+		logger.info("Pulled reservation id from agent: [UID: " + gridServiceAgent.getUid() + ", host: " 
+		+ gridServiceAgent.getMachine().getHostAddress() + "]");
 		if (reservationId != null && !reservationId.equals(discoveredReservationId)) {
 			logger.warning("Cloudify Adapter discovered the wrong agent for host: " + machineIp + ". "
 					+ "expected reservation id is "
