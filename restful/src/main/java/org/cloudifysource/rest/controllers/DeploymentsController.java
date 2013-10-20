@@ -709,7 +709,9 @@ public class DeploymentsController extends BaseRestController {
 		}
 		Application application = result.getApplication();
 		application.setName(appName);
-		validateInstallApplication(application);
+		
+		validateInstallApplication(application, request);
+		
 		// update effective authGroups
 		String effectiveAuthGroups = getEffectiveAuthGroups(request.getAuthGroups());
 		request.setAuthGroups(effectiveAuthGroups);
@@ -745,12 +747,32 @@ public class DeploymentsController extends BaseRestController {
 		return response;
 	}
 
-	private void validateInstallApplication(final Application application)
+	private void validateInstallApplication(final Application application, final InstallApplicationRequest request)
 			throws RestErrorException {
-		final InstallApplicationValidationContext validationContext =
-				new InstallApplicationValidationContext();
+		final InstallApplicationValidationContext validationContext = new InstallApplicationValidationContext();
+		
+		
+		// get cloud overrides file
+		final File cloudOverridesFile = getFromRepo(
+				request.getCloudOverridesUploadKey(),
+				CloudifyMessageKeys.WRONG_CLOUD_OVERRIDES_UPLOAD_KEY.getName(),
+				application.getName());
+
+		// get cloud configuration file and content
+		final File cloudConfigurationFile = getFromRepo(
+				request.getCloudConfigurationUploadKey(),
+				CloudifyMessageKeys.WRONG_CLOUD_CONFIGURATION_UPLOAD_KEY.getName(),
+				application.getName());
+		
 		validationContext.setApplication(application);
 		validationContext.setCloud(restConfig.getCloud());
+		validationContext.setAdmin(admin);
+		validationContext.setCloudConfigurationFile(cloudConfigurationFile);
+		validationContext.setCloudOverridesFile(cloudOverridesFile);
+		validationContext.setDebugMode(request.getDebugMode());
+		validationContext.setDebugEvents(request.getDebugEvents());
+		validationContext.setDebugAll(request.isDebugAll());
+		
 		for (final InstallApplicationValidator validator : installApplicationValidators) {
 			validator.validate(validationContext);
 		}
@@ -997,10 +1019,6 @@ public class DeploymentsController extends BaseRestController {
 			throw new RestErrorException(CloudifyMessageKeys.UPLOAD_KEY_PARAMETER_MISSING.getName());
 		}
 		
-		// set the new auth groups
-		String effectiveAuthGroups = getEffectiveAuthGroups(request.getAuthGroups());
-		request.setAuthGroups(effectiveAuthGroups);
-
 		// get service folder
 		final File packedFile = getFromRepo(uploadKey,
 				CloudifyMessageKeys.WRONG_SERVICE_FOLDER_UPLOAD_KEY.getName(),
@@ -1015,45 +1033,6 @@ public class DeploymentsController extends BaseRestController {
 		fileHolder.setServiceOverridesFile(serviceOverridesFile);
 		fileHolder.setApplicationPropertiesFile(null); /* application properties file */
 
-		final String deploymentID = UUID.randomUUID().toString();
-		// install the service
-		return installServiceInternal(
-				appName,
-				serviceName,
-				request,
-				deploymentID,
-				fileHolder,
-				null);
-	}
-
-	/**
-	 * An internal implementation for installing a service.
-	 * 
-	 * @param appName
-	 *            Application name.
-	 * @param serviceName
-	 *            Service name.
-	 * @param request
-	 *            Install service request.
-	 * @param deploymentID
-	 *            the application deployment ID.
-	 * @param fileHolder
-	 *            A file holder for necessary deployment files.
-	 * @param serviceProps
-	 *            service properties dependent on the application.
-	 * @return an install service response.
-	 * @throws RestErrorException .
-	 */
-	public InstallServiceResponse installServiceInternal(
-			final String appName,
-			final String serviceName,
-			final InstallServiceRequest request,
-			final String deploymentID,
-			final DeploymentFileHolder fileHolder,
-			final ServiceApplicationDependentProperties serviceProps)
-			throws RestErrorException {
-
-		final String absolutePuName = ServiceUtils.getAbsolutePUName(appName, serviceName);
 		// extract the service folder
 		final File serviceDir = extractServiceDir(fileHolder.getPackedFile(), absolutePuName);
 		// get cloud overrides file
@@ -1081,11 +1060,8 @@ public class DeploymentsController extends BaseRestController {
 		final Service service = readService(workingProjectDir,
 				request,
 				absolutePuName,
-				serviceProps);
-
-		// update template name
-		final String templateName = getTempalteNameFromService(service);
-
+				null);
+		
 		// get cloud overrides file
 		final File cloudOverridesFile = getFromRepo(
 				request.getCloudOverridesUploadKey(),
@@ -1097,20 +1073,87 @@ public class DeploymentsController extends BaseRestController {
 				request.getCloudConfigurationUploadKey(),
 				CloudifyMessageKeys.WRONG_CLOUD_CONFIGURATION_UPLOAD_KEY.getName(),
 				absolutePuName);
+		
+		// validates
+		validateInstallService(
+				absolutePuName, 
+				request, 
+				service, 
+				service.getCompute().getTemplate(), 
+				cloudOverridesFile, 
+				serviceOverridesFile, 
+				cloudConfigurationFile);
+		
+		// set the new auth groups
+		String effectiveAuthGroups = getEffectiveAuthGroups(request.getAuthGroups());
+		request.setAuthGroups(effectiveAuthGroups);
+
+		final String deploymentID = UUID.randomUUID().toString();
+		
+		// install the service
+		return installServiceInternal(
+				appName,
+				request,
+				deploymentID,
+				fileHolder,
+				null,
+				service,
+				updatedPackedFile);
+	}
+
+	/**
+	 * An internal implementation for installing a service.
+	 * 
+	 * @param appName
+	 *            Application name.
+	 * @param request
+	 *            Install service request.
+	 * @param deploymentID
+	 *            the application deployment ID.
+	 * @param fileHolder
+	 *            A file holder for necessary deployment files.
+	 * @param serviceProps
+	 *            service properties dependent on the application.
+	 * @param service 
+	 *            the service object.
+	 * @param packedFile 
+	 *            the service packed file.
+	 * @return an install service response.
+	 * @throws RestErrorException .
+	 */
+	public InstallServiceResponse installServiceInternal(
+			final String appName,
+			final InstallServiceRequest request,
+			final String deploymentID,
+			final DeploymentFileHolder fileHolder,
+			final ServiceApplicationDependentProperties serviceProps, 
+			final Service service,
+			final File packedFile)
+			throws RestErrorException {
+
+		String serviceName = service.getName();
+		final String absolutePuName = ServiceUtils.getAbsolutePUName(appName, serviceName);
+
+		// update template name
+		final String templateName = getTempalteNameFromService(service);
+		
+		// get cloud overrides file
+		final File cloudOverridesFile = getFromRepo(
+				request.getCloudOverridesUploadKey(),
+				CloudifyMessageKeys.WRONG_CLOUD_OVERRIDES_UPLOAD_KEY.getName(),
+				absolutePuName);
+
+		// get cloud configuration file and content
+		final File cloudConfigurationFile = getFromRepo(
+				request.getCloudConfigurationUploadKey(),
+				CloudifyMessageKeys.WRONG_CLOUD_CONFIGURATION_UPLOAD_KEY.getName(),
+				absolutePuName);
+		
 		final byte[] cloudConfigurationContents = getCloudConfigurationContent(cloudConfigurationFile, absolutePuName);
 
 		// update effective authGroups
 		String effectiveAuthGroups = getEffectiveAuthGroups(request.getAuthGroups());
 		request.setAuthGroups(effectiveAuthGroups);
-
-		// validations
-		validateInstallService(absolutePuName,
-				request,
-				service,
-				templateName,
-				cloudOverridesFile,
-				fileHolder.getServiceOverridesFile(),
-				cloudConfigurationFile);
 
 		String cloudOverrides = null;
 		try {
@@ -1134,7 +1177,7 @@ public class DeploymentsController extends BaseRestController {
 		deployConfig.setAbsolutePUName(absolutePuName);
 		deployConfig.setCloudOverrides(cloudOverrides);
 		deployConfig.setCloud(cloud);
-		deployConfig.setPackedFile(updatedPackedFile);
+		deployConfig.setPackedFile(packedFile);
 		deployConfig.setTemplateName(templateName);
 		deployConfig.setApplicationName(appName);
 		deployConfig.setInstallRequest(request);
@@ -1684,7 +1727,6 @@ public class DeploymentsController extends BaseRestController {
 		validationContext.setAbsolutePuName(absolutePuName);
 		validationContext.setCloud(restConfig.getCloud());
 		validationContext.setAdmin(admin);
-		validationContext.setRequest(request);
 		validationContext.setService(service);
 		validationContext.setTemplateName(templateName);
 		validationContext.setCloudOverridesFile(cloudOverridesFile);
