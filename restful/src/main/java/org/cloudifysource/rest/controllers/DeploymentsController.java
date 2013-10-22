@@ -1051,7 +1051,6 @@ public class DeploymentsController extends BaseRestController {
 				absolutePuName, 
 				readServiceResult.getServiceOverridesFile());
 		
-		
 		// merge properties with overrides files
 		PropertiesOverridesMerger merger = new PropertiesOverridesMerger(
 				readServiceResult.getServicePropertiesFile(), 
@@ -2296,6 +2295,4 @@ public class DeploymentsController extends BaseRestController {
 			final SetServiceInstancesValidator[] setServiceInstancesValidators) {
 		this.setServiceInstancesValidators = setServiceInstancesValidators;
 	}
-
-	
 }
