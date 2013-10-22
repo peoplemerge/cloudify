@@ -339,7 +339,6 @@ public class DeploymentsController extends BaseRestController {
                 key);
 		EventsCacheValue value;
 		try {
-			logger.fine(EventsUtils.getThreadId() + " Retrieving events from cache for key : " + key);
 			value = eventsCache.get(key);
 		} catch (final ExecutionException e) {
 			throw e.getCause();
@@ -351,7 +350,6 @@ public class DeploymentsController extends BaseRestController {
 				// enforce time restriction on refresh operations.
 				long now = System.currentTimeMillis();
 				if (now - value.getLastRefreshedTimestamp() > REFRESH_INTERVAL_MILLIS) {
-					logger.fine(EventsUtils.getThreadId() + " Some events are missing from cache. Refreshing...");
 					// refresh the cache for this deployment.
 					eventsCache.refresh(key);
 				}
